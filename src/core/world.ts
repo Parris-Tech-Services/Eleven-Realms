@@ -4,33 +4,80 @@ import { DeterministicRng } from './rng.js';
 export const GRID_WIDTH = 16;
 export const GRID_HEIGHT = 12;
 export const MAX_HEALTH = 3;
+const START = { x: 2, y: 2 };
+const GATE = { x: 14, y: 10 };
 
-export function createWorld(seed = 1, score = 0, inventory: string[] = [], health = MAX_HEALTH): WorldState {
-  const rng = new DeterministicRng(seed);
-  
+function createWalls(rng: DeterministicRng): boolean[][] {
   const walls: boolean[][] = [];
-  for (let y = 0; y < GRID_HEIGHT; y++) {
+  for (let y = 0; y < GRID_HEIGHT; y += 1) {
     walls[y] = [];
-    for (let x = 0; x < GRID_WIDTH; x++) {
-      const isStart = Math.abs(x - 2) <= 1 && Math.abs(y - 2) <= 1;
-      const isEnd = Math.abs(x - 14) <= 1 && Math.abs(y - 10) <= 1;
-      walls[y][x] = (!isStart && !isEnd && rng.int(0, 100) < 25);
+    for (let x = 0; x < GRID_WIDTH; x += 1) {
+      walls[y][x] = rng.int(0, 100) < 25;
     }
   }
 
+  // Carve a dependable route so every generated seed remains beatable.
+  for (let x = START.x; x <= GATE.x; x += 1) {
+    walls[START.y][x] = false;
+  }
+  for (let y = START.y; y <= GATE.y; y += 1) {
+    walls[y][GATE.x] = false;
+  }
+  walls[START.y][START.x] = false;
+  walls[GATE.y][GATE.x] = false;
+  return walls;
+}
+
+function pathPositions(): Array<{ x: number; y: number }> {
+  const positions: Array<{ x: number; y: number }> = [];
+  for (let x = START.x + 2; x < GATE.x; x += 1) {
+    positions.push({ x, y: START.y });
+  }
+  for (let y = START.y + 1; y < GATE.y; y += 1) {
+    positions.push({ x: GATE.x, y });
+  }
+  return positions;
+}
+
+function takePathPosition(
+  rng: DeterministicRng,
+  available: Array<{ x: number; y: number }>,
+  predicate: (position: { x: number; y: number }) => boolean = () => true,
+): { x: number; y: number } {
+  const candidates = available
+    .map((position, index) => ({ position, index }))
+    .filter(({ position }) => predicate(position));
+  const selected = candidates[rng.int(0, candidates.length - 1)];
+  const index = available.indexOf(selected.position);
+  available.splice(index, 1);
+  return selected.position;
+}
+
+export function createWorld(seed = 1, score = 0, inventory: string[] = [], health = MAX_HEALTH): WorldState {
+  const rng = new DeterministicRng(seed);
+  const walls = createWalls(rng);
+  const available = pathPositions();
+  const key = takePathPosition(rng, available);
+  const relicOne = takePathPosition(rng, available);
+  const relicTwo = takePathPosition(rng, available);
+  const hazard = takePathPosition(rng, available);
+  const safeEnemySpawn = (position: { x: number; y: number }) => position.x >= 7 || position.y > START.y + 1;
+  const enemyOne = takePathPosition(rng, available, safeEnemySpawn);
+  const enemyTwo = takePathPosition(rng, available, safeEnemySpawn);
+
   const entities: Entity[] = [
-    { id: 'gate-1', type: 'gate', x: 14, y: 10, collected: false },
-    { id: 'key-1', type: 'key', x: rng.int(4, 13), y: rng.int(4, 9), collected: false },
-    { id: 'enemy-1', type: 'enemy', x: rng.int(8, 15), y: rng.int(0, 5), collected: false },
-    { id: 'enemy-2', type: 'enemy', x: rng.int(0, 8), y: rng.int(6, 11), collected: false },
+    { id: 'gate-1', type: 'gate', x: GATE.x, y: GATE.y, collected: false },
+    { id: 'key-1', type: 'key', x: key.x, y: key.y, collected: false },
+    { id: 'relic-1', type: 'relic', x: relicOne.x, y: relicOne.y, collected: false },
+    { id: 'relic-2', type: 'relic', x: relicTwo.x, y: relicTwo.y, collected: false },
+    { id: 'hazard-1', type: 'hazard', x: hazard.x, y: hazard.y, collected: false },
+    { id: 'enemy-1', type: 'enemy', x: enemyOne.x, y: enemyOne.y, collected: false },
+    { id: 'enemy-2', type: 'enemy', x: enemyTwo.x, y: enemyTwo.y, collected: false },
   ];
-  
+
   for (let i = 0; i < 6; i++) {
-    let cx = rng.int(0, GRID_WIDTH - 1);
-    let cy = rng.int(0, GRID_HEIGHT - 1);
-    if (!walls[cy][cx]) {
-      entities.push({ id: `coin-${i}`, type: 'coin', x: cx, y: cy, collected: false });
-    }
+    const coin = takePathPosition(rng, available);
+    entities.push({ id: `coin-${i}`, type: 'coin', x: coin.x, y: coin.y, collected: false });
   }
 
   return {
@@ -40,7 +87,7 @@ export function createWorld(seed = 1, score = 0, inventory: string[] = [], healt
     height: 480,
     gridWidth: GRID_WIDTH,
     gridHeight: GRID_HEIGHT,
-    player: { x: 2, y: 2 },
+    player: { ...START },
     entities,
     walls,
     inventory,
@@ -50,7 +97,7 @@ export function createWorld(seed = 1, score = 0, inventory: string[] = [], healt
     relicsFound: 0,
     questCompleted: false,
     gameOver: false,
-    log: [`Realm ${seed} entrance opens.`],
+    log: [`Realm ${seed} entrance opens. A clear route leads east.`],
   };
 }
 
@@ -74,7 +121,7 @@ export function movePlayer(world: WorldState, direction: Direction): WorldState 
     nextY = world.player.y;
   }
 
-  // Check gate lock
+  // Check gate lock before consuming a turn.
   const gate = world.entities.find(e => e.type === 'gate' && e.x === nextX && e.y === nextY);
   if (gate && !world.inventory.includes('key')) {
     nextX = world.player.x;
@@ -99,6 +146,18 @@ export function movePlayer(world: WorldState, direction: Direction): WorldState 
         entity.collected = true;
         world.inventory.push('key');
         newLogs.unshift('You found a Key! The gate is unlocked.');
+      } else if (entity.type === 'relic') {
+        entity.collected = true;
+        world.score += 25;
+        world.relicsFound += 1;
+        newLogs.unshift(`Ancient relic recovered (${world.relicsFound}/2).`);
+      } else if (entity.type === 'hazard') {
+        world.health = Math.max(0, world.health - 1);
+        newLogs.unshift(`The realm bites back. Health ${world.health}/${world.maxHealth}.`);
+        if (world.health === 0) {
+          world.gameOver = true;
+          newLogs.unshift('The realm claimed you. Restart to try again.');
+        }
       } else if (entity.type === 'gate') {
         newLogs.unshift('You passed through the gate!');
         // Generate new level and return entirely new world state!
@@ -110,17 +169,24 @@ export function movePlayer(world: WorldState, direction: Direction): WorldState 
   // Move enemies
   for (const entity of world.entities) {
     if (entity.type === 'enemy' && !entity.collected) {
-      let ex = entity.x;
-      let ey = entity.y;
-      if (Math.abs(world.player.x - ex) > Math.abs(world.player.y - ey)) {
-        ex += world.player.x > ex ? 1 : -1;
-      } else {
-        ey += world.player.y > ey ? 1 : -1;
-      }
-      
-      if (!world.walls[ey][ex]) {
-        entity.x = ex;
-        entity.y = ey;
+      // Move at half speed (every other tick) to be less aggressive
+      if (world.tick % 2 === 0) {
+        let ex = entity.x;
+        let ey = entity.y;
+        
+        // Only chase the player if they are relatively close (within 6 tiles)
+        if (Math.abs(world.player.x - ex) + Math.abs(world.player.y - ey) <= 6) {
+          if (Math.abs(world.player.x - ex) > Math.abs(world.player.y - ey)) {
+            ex += world.player.x > ex ? 1 : -1;
+          } else {
+            ey += world.player.y > ey ? 1 : -1;
+          }
+        }
+        
+        if (!world.walls[ey][ex]) {
+          entity.x = ex;
+          entity.y = ey;
+        }
       }
 
       if (entity.x === world.player.x && entity.y === world.player.y) {
