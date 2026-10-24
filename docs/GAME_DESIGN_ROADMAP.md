@@ -172,6 +172,31 @@ These are design influences, not implementation requirements or imitation target
 - Add CI checks for test, typecheck, build, mission validation, and smoke validation.
 - Keep every implemented feature tied to a small contract, test, or evidence artifact.
 
+## Greptile code review, reconciliation and acceptance — ERG tasks (24 October 2026)
+
+These are uniquely designated **ERG-001–ERG-017** and do not renumber or change the earlier 1–9 Core Player Loop or existing roadmap items. Canonical review: [Eleven Realms draft PR #3](https://github.com/Parris-Tech-Services/Eleven-Realms/pull/3); [tracking issue #4](https://github.com/Parris-Tech-Services/Eleven-Realms/issues/4); [cross-repository Greptile tracker](https://github.com/Parris-Tech-Services/RepoClean/issues/1). Greptile run `34998453` **COMPLETED** 24 October 2026 with confidence **4/5**, posting [one P2 finding: missing seeded movement tests](https://github.com/Parris-Tech-Services/Eleven-Realms/pull/3#discussion_r4366695038). That finding is initially **unaddressed**. Main and the draft branch also conflict on `WorldState`, fog-of-war and relic progression; Greptile acknowledged those prior design conflicts rather than reporting them as new PR findings.
+
+- [ ] **ERG-001** [P1] Audit the current `main` WorldState and draft PR #3 before merging; reconcile its code with the canonical authoritative changes without overwriting new gameplay, fog-of-war or quest logic.
+- [ ] **ERG-002** [P1] Restore required `WorldState.discovered: boolean[][]` construction and `updateVisibility` handling in PR #3; validate fog-of-war initialization and movement after integration.
+- [ ] **ERG-003** [P1] Reconcile `createWorld` signature, persisted `relicsFound`, `questCompleted` conditions and inter-realm state carry-over; guard against progress resetting or winning a realm incorrectly.
+- [ ] **ERG-004** [P2] Add seeded movement tests for stepping onto hazards, health reduction, death/game-over and actions after death, as requested in Greptile's [review comment](https://github.com/Parris-Tech-Services/Eleven-Realms/pull/3#discussion_r4366695038).
+- [ ] **ERG-005** [P2] Test collecting both relics, score rewards, non-duplication and quest completion using actual seeded moves, not just static entity placement.
+- [ ] **ERG-006** [P2] Test enemy pursuit radius, alternate-tick movement, collisions and damage (including no out-of-bounds access) over representative deterministic seeds.
+- [ ] **ERG-007** [P2] Test the locked gate consumes no turn, while an unlocked gate transitions correctly and preserves required health, score, inventory rules, fog and relic progress.
+- [ ] **ERG-008** Add multi-seed/property-style checks that generated worlds have valid non-overlapping entity positions, reachable key and gate, a survivable route with hazards/enemies, and deterministic layouts.
+- [ ] **ERG-009** Run `npm test`, `npm run typecheck`, `npm run build`, applicable mission validation and CI on the reconciled PR; record run URLs, failures, fixes and commit SHA.
+- [ ] **ERG-010** Independently playtest a full seeded realm on desktop and mobile-sized browser: pickups, combat, damage/death, gate and next-level progression, UX/accessibility and save/restore if supported; attach reproducible evidence.
+- [ ] **ERG-011** Trigger Greptile re-review **after** changes; inspect and address the P2 movement-test finding and any new comments, and mark threads addressed only with evidence.
+- [ ] **ERG-012** Verify the persistent **Eleven Realms engineering standards** in Greptile are ACTIVE and appropriately scoped (rule `faba097b-1f19-4482-9578-a721eb8ce6d0`, together with universal correctness/security rules); observe their use in a follow-up PR review.
+- [ ] **ERG-013** Search and verify the saved **procedural WorldState architecture pattern** `5ef310b8-4f2a-4cc6-8aa8-bd8ef1dcca71`, update stale assumptions after reconciliation and document how `createWorld`, `stepWorld`, RNG, save state and rendering connect.
+- [ ] **ERG-014** Enable/publish a **native Greptile searchable knowledge base** for Eleven Realms and successfully query its indexed codebase; its public documentation index currently has no published documents.
+- [ ] **ERG-015** Verify Greptile reviews are **automatically triggered** for a newly opened/updated Eleven Realms PR, with traceable inline suggestions and acceptable credits; do not equate manual review triggers with auto-coverage.
+- [ ] **ERG-016** Capture Greptile repository-scoped analytics before/after repairs: reviews, severity, security issues, addressed/unaddressed findings and review comment history. Confirm the original P2 is resolved only after a verified fix.
+- [ ] **ERG-017** Update [tracking issue #4](https://github.com/Parris-Tech-Services/Eleven-Realms/issues/4), [portfolio tracker](https://github.com/Parris-Tech-Services/RepoClean/issues/1) and any work checkpoint; record tested SHA, published build or deployment URL, interactive playtest evidence and unresolved blockers before closing.
+
+**Evidence distinction:** The initial Greptile run, inline comment, saved instruction and architecture pattern and initial portfolio analytics were verified. None of these checklist items claims a fixed gameplay defect, passing build or production deployment.
+
+
 ## Recommended Delivery Phases
 
 ### Phase 1: Tactical Foundation
