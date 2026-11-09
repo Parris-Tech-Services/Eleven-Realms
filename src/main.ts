@@ -3,6 +3,11 @@ import { createWorld, stepWorld } from './core/world.js';
 import { GridCanvasRenderer } from './render/canvasRenderer.js';
 
 let world = createWorld(1);
+let sessionStarted = false;
+const telemetry = (name: 'game_start' | 'game_finish'): void => {
+  const analytics = (window as Window & { ParrisAnalytics?: { track?: (name: string) => void } }).ParrisAnalytics;
+  analytics?.track?.(name);
+};
 const canvas = document.querySelector<HTMLCanvasElement>('#game-canvas');
 const eventLog = document.querySelector<HTMLUListElement>('#event-log');
 const tickReadout = document.querySelector<HTMLElement>('#tick-readout');
@@ -55,11 +60,15 @@ function render(): void {
 }
 
 function move(direction: 'north' | 'south' | 'east' | 'west'): void {
+  if (!sessionStarted) { sessionStarted = true; telemetry('game_start'); }
+  const wasCompleted = world.questCompleted;
   world = stepWorld(world, direction);
   render();
+  if (!wasCompleted && world.questCompleted) telemetry('game_finish');
 }
 
 function restart(): void {
+  sessionStarted = false;
   world = createWorld(world.seed + 1);
   render();
 }
@@ -97,3 +106,22 @@ document.querySelectorAll<HTMLButtonElement>('[data-direction]').forEach((button
 });
 
 restartButton?.addEventListener('click', restart);
+
+
+// Swipe the map in the desired direction. Pointer events work on Android and desktop.
+let swipeStart: { x: number; y: number; id: number } | null = null;
+canvas.addEventListener('pointerdown', (event) => {
+  if (!event.isPrimary) return;
+  swipeStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+});
+canvas.addEventListener('pointerup', (event) => {
+  if (!swipeStart || event.pointerId !== swipeStart.id) return;
+  const dx = event.clientX - swipeStart.x;
+  const dy = event.clientY - swipeStart.y;
+  swipeStart = null;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return;
+  move(Math.abs(dx) > Math.abs(dy)
+    ? (dx > 0 ? 'east' : 'west')
+    : (dy > 0 ? 'south' : 'north'));
+});
+canvas.addEventListener('pointercancel', () => { swipeStart = null; });

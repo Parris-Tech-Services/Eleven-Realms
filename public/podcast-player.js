@@ -50,7 +50,7 @@
   const style = document.createElement('style');
   style.textContent = `
     #er-podcast-root{position:relative;z-index:2147483000;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-    #er-podcast-launcher{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483000;border:1px solid #4f9f75;border-radius:999px;background:#0c1712;color:#d9ffe9;padding:12px 18px;font:700 14px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-shadow:0 12px 35px rgba(0,0,0,.45);cursor:pointer;white-space:nowrap;touch-action:manipulation}
+    #er-podcast-launcher{position:relative;left:auto;bottom:auto;transform:none;z-index:2147483000;border:1px solid #4f9f75;border-radius:999px;background:#0c1712;color:#d9ffe9;padding:12px 18px;font:700 14px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-shadow:0 12px 35px rgba(0,0,0,.45);cursor:pointer;white-space:nowrap;touch-action:manipulation}
     #er-podcast-panel{position:fixed;left:50%;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483000;width:min(620px,calc(100vw - 16px));box-sizing:border-box;border:1px solid #315e47;border-radius:16px;background:#08110d;color:#e8fff1;padding:13px;box-shadow:0 18px 50px rgba(0,0,0,.65)}
     .er-podcast-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}.er-podcast-kicker{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#72d49c}.er-podcast-title{font-size:16px;line-height:1.3;margin:4px 0 0}.er-podcast-meta{font-size:12px;line-height:1.4;color:#b7d8c5;margin:5px 0 0}.er-podcast-close{width:40px;height:40px;flex:0 0 40px;border:1px solid #315e47;border-radius:50%;background:#12241a;color:#e8fff1;font-size:22px;cursor:pointer;touch-action:manipulation}.er-podcast-frame{display:block;width:100%;height:152px;border:0;border-radius:12px;background:#030705}.er-podcast-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.er-podcast-button,.er-podcast-link{border-radius:10px;padding:9px 12px;font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;text-decoration:none;cursor:pointer;touch-action:manipulation}.er-podcast-button{border:0;background:#2f855a;color:#fff}.er-podcast-link{display:inline-flex;align-items:center;border:1px solid #315e47;background:#12241a;color:#e8fff1}.er-podcast-note{font-size:11px;color:#85a894;margin:9px 0 0}
     @media(max-width:640px){#er-podcast-panel{width:calc(100vw - 10px);padding:11px}.er-podcast-actions>*{flex:1;justify-content:center;text-align:center}}
@@ -59,7 +59,7 @@
 
   const root = document.createElement('div');
   root.id = 'er-podcast-root';
-  document.body.appendChild(root);
+  (document.querySelector('.log-panel') || document.body).appendChild(root);
 
   function render() {
     if (!open) {

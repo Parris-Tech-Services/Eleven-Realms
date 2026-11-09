@@ -146,3 +146,27 @@ body {
   .sidebar { display: flex; }
   .game-footer { font-size: 0.54rem; }
 }
+
+
+/* Mobile play mode: keep the map and large touch controls together. */
+@media (max-width: 820px) {
+  .layout { display:flex; flex-direction:column; gap:12px; width:calc(100% - 20px); max-width:680px; padding:10px 0 24px; }
+  .game-shell { flex:none; order:0; box-sizing:border-box; width:100%; padding:7px; }
+  #game-canvas { box-sizing:border-box; touch-action:none; }
+  .sidebar { display:contents; }
+  .sidebar > .panel { box-sizing:border-box; width:100%; order:2; }
+  .sidebar > .controls-panel { order:1; padding:12px 14px; background:#0b2520; }
+  .controls-panel .panel-kicker { margin-bottom:5px; }
+  .direction-pad { grid-template-columns:repeat(3,minmax(60px,76px)); grid-template-rows:repeat(2,58px); gap:8px; margin:4px 0 12px; }
+  .move-button { border-radius:12px; min-height:58px; font-size:1.8rem; font-weight:700; touch-action:manipulation; user-select:none; -webkit-user-select:none; }
+  .move-button:active { background:#27614d; border-color:#a5ffbd; }
+  .restart-button { min-height:44px; border-radius:8px; touch-action:manipulation; }
+  .panel { padding:14px; }
+  .game-footer { font-size:0.67rem; letter-spacing:.04em; }
+}
+@media (max-width: 560px) {
+  .topbar { display:flex; align-items:center; padding:8px 12px; gap:8px; }
+  .brand { font-size:1.28rem; }
+  .eyebrow { font-size:.55rem; }
+  .hud { display:flex; flex-direction:column; align-items:flex-end; gap:2px; margin:0; font-size:.64rem; }
+}

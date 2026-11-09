@@ -10,7 +10,7 @@ export class GridCanvasRenderer implements CanvasRenderer {
     }
 
     ctx.clearRect(0, 0, world.width, world.height);
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = '#081b1b';
     ctx.fillRect(0, 0, world.width, world.height);
 
     const cellWidth = world.width / world.gridWidth;
