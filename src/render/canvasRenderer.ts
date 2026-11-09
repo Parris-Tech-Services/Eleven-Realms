@@ -24,7 +24,15 @@ export class GridCanvasRenderer implements CanvasRenderer {
 
     for (let y = 0; y < world.gridHeight; y += 1) {
       for (let x = 0; x < world.gridWidth; x += 1) {
-        if (!world.discovered[y][x]) continue;
+        if (!world.discovered[y][x]) {
+          // Subtle grid beneath fog makes the map readable on a small screen
+          // without revealing unexplored walls, hazards or rewards.
+          ctx.fillStyle = (x + y) % 2 === 0 ? '#0a1c20' : '#08181d';
+          ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+          ctx.strokeStyle = 'rgba(140, 195, 173, 0.07)';
+          ctx.strokeRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+          continue;
+        }
 
         const visible = isVisible(x, y);
 
