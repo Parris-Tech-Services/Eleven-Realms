@@ -170,3 +170,7 @@ body {
   .eyebrow { font-size:.55rem; }
   .hud { display:flex; flex-direction:column; align-items:flex-end; gap:2px; margin:0; font-size:.64rem; }
 }
+
+.setting-row { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.setting-row input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: #4f9f75; }
+.setting-row small { display: block; margin-top: 2px; opacity: 0.7; font-size: 0.75rem; }

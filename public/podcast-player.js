@@ -28,6 +28,10 @@
   ];
 
   const STORAGE_KEY = 'eleven-realms-podcast-v1';
+  const PREF_KEY = 'eleven-realms-podcasts-enabled-v1';
+  // Off by default: podcasts should not distract from the game unless turned on in Settings.
+  let enabled = false;
+  try { enabled = localStorage.getItem(PREF_KEY) === '1'; } catch (_) {}
   let open = false;
   let currentIndex = 0;
 
@@ -62,6 +66,11 @@
   (document.querySelector('.log-panel') || document.body).appendChild(root);
 
   function render() {
+    if (!enabled) {
+      open = false;
+      root.replaceChildren();
+      return;
+    }
     if (!open) {
       root.innerHTML = '<button id="er-podcast-launcher" type="button" aria-label="Open worldbuilding podcasts">🎧 Podcasts</button>';
       root.querySelector('#er-podcast-launcher').addEventListener('click', () => { open = true; render(); });
@@ -85,6 +94,16 @@
     root.querySelector('.er-podcast-link').href = `https://open.spotify.com/episode/${encodeURIComponent(current.id)}`;
     root.querySelector('.er-podcast-close').addEventListener('click', () => { open = false; render(); });
     root.querySelector('.er-podcast-button').addEventListener('click', () => { currentIndex = pickDifferent(); save(); render(); });
+  }
+
+  const settingBox = document.getElementById('setting-podcasts');
+  if (settingBox) {
+    settingBox.checked = enabled;
+    settingBox.addEventListener('change', () => {
+      enabled = settingBox.checked;
+      try { localStorage.setItem(PREF_KEY, enabled ? '1' : '0'); } catch (_) {}
+      render();
+    });
   }
 
   render();
